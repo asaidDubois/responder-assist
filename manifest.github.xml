@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<OfficeApp
+  xmlns="http://schemas.microsoft.com/office/appforoffice/1.1"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:bt="http://schemas.microsoft.com/office/officeappbasictypes/1.0"
+  xmlns:mailappor="http://schemas.microsoft.com/office/mailappversionoverrides/1.0"
+  xsi:type="MailApp">
+  <Id>e8b3f4a0-5c1d-4e9a-9b8f-1a2b3c4d5e6f</Id>
+  <Version>0.1.0</Version>
+  <ProviderName>Responder Assist</ProviderName>
+  <DefaultLocale>fr-FR</DefaultLocale>
+  <DisplayName DefaultValue="Responder Assist" />
+  <Description DefaultValue="Aide à la rédaction et traduction de courriels via IA" />
+  <IconUrl DefaultValue="https://GITHUB_USER.github.io/REPO_NAME/assets/icon-64.png" />
+  <HighResolutionIconUrl DefaultValue="https://GITHUB_USER.github.io/REPO_NAME/assets/icon-128.png" />
+  <SupportUrl DefaultValue="https://GITHUB_USER.github.io/REPO_NAME/" />
+  <AppDomains>
+    <AppDomain>github.io</AppDomain>
+    <AppDomain>githubusercontent.com</AppDomain>
+  </AppDomains>
+  <Permissions>ReadWriteItem</Permissions>
+  <Rule xsi:type="RuleCollection" Mode="Or">
+    <Rule xsi:type="ItemIs" ItemType="Message" FormType="Read" />
+    <Rule xsi:type="ItemIs" ItemType="Message" FormType="Edit" />
+  </Rule>
+  <DisableEntityHighlighting>false</DisableEntityHighlighting>
+  <VersionOverrides xmlns="http://schemas.microsoft.com/office/mailappversionoverrides/1.0" xsi:type="VersionOverridesV1_0">
+    <Requirements>
+      <bt:Sets DefaultMinVersion="1.1">
+        <bt:Set Name="Mailbox" />
+      </bt:Sets>
+    </Requirements>
+    <Hosts>
+      <Host xsi:type="MailHost">
+        <DesktopFormFactor>
+          <FunctionFile resid="Commands.Url" />
+          <ExtensionPoint xsi:type="MessageReadCommandSurface">
+            <OfficeTab id="TabDefault">
+              <Group id="ResponderAssistGroup">
+                <Label resid="GroupLabel" />
+                <Control xsi:type="Button" id="OpenTaskPane">
+                  <Label resid="TaskPaneButton.Label" />
+                  <Supertip>
+                    <Title resid="TaskPaneButton.Label" />
+                    <Description resid="TaskPaneButton.Tooltip" />
+                  </Supertip>
+                  <Icon>
+                    <bt:Image size="16" resid="Icon.16x16" />
+                    <bt:Image size="32" resid="Icon.32x32" />
+                    <bt:Image size="80" resid="Icon.80x80" />
+                  </Icon>
+                  <Action xsi:type="ShowTaskpane">
+                    <SourceLocation resid="Taskpane.Url" />
+                  </Action>
+                </Control>
+              </Group>
+            </OfficeTab>
+          </ExtensionPoint>
+          <ExtensionPoint xsi:type="MessageComposeCommandSurface">
+            <OfficeTab id="TabDefault">
+              <Group id="ResponderAssistComposeGroup">
+                <Label resid="GroupLabel" />
+                <Control xsi:type="Button" id="OpenTaskPaneCompose">
+                  <Label resid="TaskPaneButton.Label" />
+                  <Supertip>
+                    <Title resid="TaskPaneButton.Label" />
+                    <Description resid="TaskPaneButton.Tooltip" />
+                  </Supertip>
+                  <Icon>
+                    <bt:Image size="16" resid="Icon.16x16" />
+                    <bt:Image size="32" resid="Icon.32x32" />
+                    <bt:Image size="80" resid="Icon.80x80" />
+                  </Icon>
+                  <Action xsi:type="ShowTaskpane">
+                    <SourceLocation resid="Taskpane.Url" />
+                  </Action>
+                </Control>
+              </Group>
+            </OfficeTab>
+          </ExtensionPoint>
+        </DesktopFormFactor>
+      </Host>
+    </Hosts>
+    <Resources>
+      <bt:Urls>
+        <bt:Url id="Taskpane.Url" DefaultValue="https://GITHUB_USER.github.io/REPO_NAME/" />
+        <bt:Url id="Commands.Url" DefaultValue="https://GITHUB_USER.github.io/REPO_NAME/commands.html" />
+      </bt:Urls>
+      <bt:ShortStrings>
+        <bt:String id="GroupLabel" DefaultValue="Responder Assist" />
+        <bt:String id="TaskPaneButton.Label" DefaultValue="Responder Assist" />
+      </bt:ShortStrings>
+      <bt:LongStrings>
+        <bt:String id="TaskPaneButton.Tooltip" DefaultValue="Ouvrir Responder Assist pour traduire et générer des réponses" />
+      </bt:LongStrings>
+      <bt:Images>
+        <bt:Image id="Icon.16x16" DefaultValue="https://GITHUB_USER.github.io/REPO_NAME/assets/icon-16.png" />
+        <bt:Image id="Icon.32x32" DefaultValue="https://GITHUB_USER.github.io/REPO_NAME/assets/icon-32.png" />
+        <bt:Image id="Icon.80x80" DefaultValue="https://GITHUB_USER.github.io/REPO_NAME/assets/icon-80.png" />
+      </bt:Images>
+    </Resources>
+  </VersionOverrides>
+</OfficeApp>

@@ -1,0 +1,33 @@
+{
+  "name": "responder-assist",
+  "version": "0.1.0",
+  "description": "Outlook Add-in to help translate emails and generate replies using AI",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "build:github": "powershell -ExecutionPolicy Bypass -File scripts/build-github.ps1",
+    "preview": "vite preview",
+    "lint": "tsc --noEmit",
+    "icons": "node generate-icons.cjs",
+    "typecheck": "tsc --noEmit",
+    "tunnel": "powershell -ExecutionPolicy Bypass -File tunnel/start-tunnel.ps1",
+    "tunnel:stop": "powershell -ExecutionPolicy Bypass -File tunnel/stop-tunnel.ps1"
+  },
+  "dependencies": {
+    "@fluentui/react": "^8.110.0",
+    "@fluentui/react-hooks": "^8.6.20",
+    "@microsoft/office-js": "^1.1.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  },
+  "devDependencies": {
+    "@types/office-js": "^1.0.0",
+    "@types/react": "^18.2.0",
+    "@types/react-dom": "^18.2.0",
+    "@vitejs/plugin-react": "^4.2.0",
+    "typescript": "^5.2.0",
+    "vite": "^5.0.0"
+  }
+}

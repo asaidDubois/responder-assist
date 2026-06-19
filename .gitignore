@@ -1,0 +1,46 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+build/
+out/
+
+# Tunnel state
+tunnel/public-url.txt
+tunnel/tunnel.log
+tunnel/manifest.dev.xml.bak
+*.bak
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Editors
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# OS
+desktop.ini
+
+# Test
+coverage/
+*.tsbuildinfo
+
+# Local manifest backups
+manifest.xml.bak
+manifest.dev.xml.bak
+
+# Generated manifest (created by build-manifest.ps1)
+manifest.xml
