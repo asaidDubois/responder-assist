@@ -42,8 +42,8 @@ coverage/
 manifest.xml.bak
 manifest.dev.xml.bak
 
-# Generated manifest (created by build-manifest.ps1)
-manifest.xml
+# Generated manifest at root (created by build-manifest.ps1)
+/manifest.xml
 
 # Tunnel binaries (downloaded on demand)
 tunnel/cloudflared.exe
