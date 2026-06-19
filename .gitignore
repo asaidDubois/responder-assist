@@ -44,3 +44,7 @@ manifest.dev.xml.bak
 
 # Generated manifest (created by build-manifest.ps1)
 manifest.xml
+
+# Tunnel binaries (downloaded on demand)
+tunnel/cloudflared.exe
+tunnel/ngrok.exe

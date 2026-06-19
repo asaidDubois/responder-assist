@@ -8,72 +8,109 @@ Add-in Outlook qui aide à traduire les courriels, générer des réponses, appr
 - **Office.js** (Mailbox)
 - **Fluent UI** (interface)
 - **Web Crypto API** (chiffrement local de la clé API et des paramètres)
-- Compatible avec : OpenAI, Azure OpenAI, Ollama, Cloudflare Workers AI, OpenRouter, ou tout endpoint compatible OpenAI
+- Compatible avec : OpenAI, Azure OpenAI, Ollama, Cloudflare Workers AI, OpenRouter, Groq, DeepSeek, Mistral, ou tout endpoint compatible OpenAI
 
 ## Fonctionnalités
 
 - **Traduction automatique** des courriels reçus vers le français
 - **Génération de 3 réponses** (courte, professionnelle, détaillée) à partir du fil complet
-- **Réponse multilingue** : génération en français + traduction vers la langue du courriel reçu (option activable)
-- **Apprentissage du style** : analyse à la demande du courriel ouvert (pas de scan global)
+- **Réponse multilingue** : génération en français + traduction vers la langue du courriel reçu
+- **Apprentissage du style** : analyse à la demande du courriel ouvert uniquement
 - **Correction avant envoi** : orthographe, grammaire, ponctuation, frappe, style — acceptation tout ou individuelle
 - **Multi-fournisseurs IA** : URL + clé API + modèle saisis par l'utilisateur
 
-## Installation et développement
+---
 
-### 1. Installer les dépendances
+## Déploiement sur GitHub Pages (recommandé)
+
+Le moyen le plus fiable d'utiliser l'add-in : GitHub Pages fournit une URL HTTPS stable que Outlook Web peut atteindre depuis ses serveurs.
+
+### Étape 1 : Créer le dépôt GitHub
+
+1. Va sur https://github.com/new
+2. Nom : `responder-assist` (ou autre)
+3. **Public** (obligatoire pour GitHub Pages gratuit)
+4. Ne coche pas "Initialize with README" (on a déjà un repo local)
+5. Crée le dépôt
+
+### Étape 2 : Pousser le code
+
+```bash
+cd D:\OpenCode\ResponderAssist
+git remote add origin https://github.com/TON-USER/responder-assist.git
+git push -u origin main
+```
+
+### Étape 3 : Activer GitHub Pages
+
+1. Sur GitHub : **Settings** → **Pages**
+2. Source : **GitHub Actions**
+3. Le workflow `.github/workflows/deploy.yml` se déclenche automatiquement
+4. Attend ~2 minutes, l'URL s'affiche : `https://TON-USER.github.io/responder-assist/`
+
+### Étape 4 : Générer le manifeste Outlook
+
+```powershell
+cd D:\OpenCode\ResponderAssist
+powershell -ExecutionPolicy Bypass -File scripts\build-manifest.ps1 -GitHubUser "TON-USER" -RepoName "responder-assist"
+```
+
+Cela crée `manifest.xml` avec les bonnes URLs.
+
+### Étape 5 : Installer dans Outlook
+
+1. Va sur https://outlook.office.com
+2. Ouvre un courriel
+3. `...` → `Obtenir des compléments` → **Mes compléments**
+4. `+` → **Ajouter un complément personnalisé** → **À partir d'un fichier...**
+5. Sélectionne `D:\OpenCode\ResponderAssist\manifest.xml`
+6. Accepte les avertissements
+7. Ferme/rouvre Outlook (F5)
+8. Ouvre un courriel → bouton **"Responder Assist"** dans le ruban
+
+### Étape 6 : Configurer
+
+1. Définit une phrase de passe (chiffrement local)
+2. Onglet **Configuration IA** : URL + clé API + modèle
+3. Teste la connexion
+4. Utilise !
+
+### Mises à jour futures
+
+```bash
+git add .
+git commit -m "Ma modification"
+git push
+```
+
+Le déploiement est automatique (~2 min). L'add-in sera mis à jour dans Outlook au prochain rechargement de la page.
+
+---
+
+## Développement local
+
+### Installation
 ```bash
 cd D:\OpenCode\ResponderAssist
 npm install
-```
-
-### 2. Lancer en mode développement
-```bash
 npm run dev
 ```
-Le serveur démarre sur `http://localhost:3000`.
 
-### 3. Charger le manifeste dans Outlook
+### Typecheck
+```bash
+npm run typecheck
+```
 
-#### Outlook sur le Web (Outlook 365)
-1. Va sur https://outlook.office.com
-2. Ouvre un courriel
-3. Clique sur `...` → `Obtenir des compléments`
-4. Onglet **Mes compléments** → **Ajouter un complément personnalisé** → **Ajouter à partir d'un fichier...**
-5. Sélectionne `D:\OpenCode\ResponderAssist\manifest.xml`
-6. Confirme l'installation
-
-#### Outlook Desktop (Windows)
-1. Copie le `manifest.xml` dans un dossier accessible
-2. Dans Outlook : `Fichier` → `Informations` → `Gérer les compléments` (bouton en haut)
-3. Onglet **Mes compléments** → `+` → **Ajouter à partir d'un fichier...**
-4. Sélectionne `manifest.xml`
-
-> **Important** : Pour que le manifeste fonctionne, le serveur de dev doit tourner. Pour un environnement de production, génère le build (`npm run build`) et héberge les fichiers statiques sur HTTPS, puis mets à jour les URLs dans `manifest.xml`.
-
-### 4. Construire pour la production
+### Build local
 ```bash
 npm run build
 ```
-Les fichiers sont générés dans `dist/`.
 
-## Configuration
+### Test avec tunnel Cloudflare (optionnel)
 
-Au premier lancement, tu dois :
-1. Définir une **phrase de passe** (chiffrement local)
-2. Aller dans l'onglet **Configuration IA** et saisir :
-   - Le **fournisseur** (OpenAI, Azure, Ollama, Cloudflare, OpenRouter, ou personnalisé)
-   - L'**URL de l'API** (par défaut `https://api.openai.com/v1`)
-   - La **clé API**
-   - Le **modèle** (par défaut `gpt-5-mini`)
-3. Cliquer sur **Tester la connexion** pour valider
-4. Aller dans **Paramètres** pour configurer tutoiement/vouvoiement, ton, longueur, etc.
+Voir `TEST-LOCAL.md`. Note : ton DNS d'entreprise peut bloquer `*.trycloudflare.com`. GitHub Pages est plus fiable.
 
-## Sécurité
-
-- La clé API et tous les paramètres sont chiffrés via **AES-GCM 256** (Web Crypto API)
-- La phrase de passe n'est jamais stockée en clair (hash SHA-256 + sel)
-- En production, considère un backend proxy pour ne jamais exposer la clé côté client
+---
 
 ## Structure
 
@@ -83,29 +120,47 @@ src/
 │   ├── App.tsx
 │   ├── index.tsx
 │   ├── components/
-│   │   ├── AIConfigPanel.tsx
-│   │   ├── SettingsPanel.tsx
-│   │   ├── EmailView.tsx
-│   │   ├── ReplySuggestions.tsx
-│   │   ├── ProofreadPanel.tsx
-│   │   └── LearnStylePanel.tsx
+│   │   ├── AIConfigPanel.tsx       # URL + clé API + modèle
+│   │   ├── SettingsPanel.tsx       # Tutoiement, ton, longueur, etc.
+│   │   ├── EmailView.tsx           # Affichage + traduction
+│   │   ├── ReplySuggestions.tsx    # 3 réponses générées
+│   │   ├── ProofreadPanel.tsx      # Correction avant envoi
+│   │   └── LearnStylePanel.tsx     # Apprentissage du style
 │   ├── hooks/
-│   │   ├── useEmail.ts
-│   │   └── useSettings.ts
+│   │   ├── useEmail.ts             # Office.context.mailbox.item
+│   │   └── useSettings.ts          # Paramètres + profil de style
 │   └── services/
-│       ├── crypto.ts
-│       ├── storage.ts
-│       ├── openaiClient.ts
-│       ├── translator.ts
-│       ├── replyGenerator.ts
-│       ├── styleLearner.ts
-│       └── profreader.ts
+│       ├── crypto.ts               # AES-GCM 256 + PBKDF2
+│       ├── storage.ts              # Persistance chiffrée
+│       ├── openaiClient.ts         # Client OpenAI-compatible
+│       ├── translator.ts           # Détection + traduction
+│       ├── replyGenerator.ts       # Génération des 3 réponses
+│       ├── styleLearner.ts         # Analyse de style
+│       └── profreader.ts           # Correction
 └── commands/
     └── commands.html
+
+.github/workflows/
+└── deploy.yml                       # Déploiement automatique GH Pages
+
+scripts/
+├── build-github.ps1                 # Build local pour GitHub Pages
+└── build-manifest.ps1               # Génère manifest.xml avec tes URLs
+
+manifest.github.xml                  # Template du manifeste (placeholders)
+manifest.dev.xml                     # Manifeste pour dev local
+manifest.xml                         # Généré par build-manifest.ps1 (gitignored)
 ```
+
+## Sécurité
+
+- Clé API chiffrée via **AES-GCM 256** (clé dérivée par PBKDF2 depuis ta phrase de passe)
+- Phrase de passe **jamais stockée** (hash SHA-256 + sel)
+- Déchiffrement à la volée, uniquement en mémoire pendant la session
+- La phrase de passe reste en `sessionStorage` (effacé à la fermeture de l'onglet)
 
 ## Limitations connues
 
-- Le défilement du fil de discussion via Office.js est limité selon les permissions du compte Exchange
-- Web Crypto API requiert un contexte sécurisé (HTTPS ou localhost)
-- Pour Outlook Desktop, Outlook 2016 ou ultérieur est requis
+- Le défilement du fil via Office.js dépend des permissions du compte Exchange
+- L'add-in nécessite HTTPS (Outlook refuse HTTP sauf localhost en dev)
+- GitHub Pages gratuit = add-in public (acceptable car aucune donnée sensible n'est stockée sur le serveur, tout est local)
