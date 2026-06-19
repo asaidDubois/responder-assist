@@ -1,44 +1,34 @@
 import React, { useState } from "react";
-import {
-  PrimaryButton,
-  DefaultButton,
-  TextField,
-  ComboBox,
-  IComboBoxOption,
-  MessageBar,
-  MessageBarType,
-  Spinner,
-  SpinnerSize,
-} from "@fluentui/react";
+import { PrimaryButton, DefaultButton, TextField, Dropdown, MessageBar, Spinner } from "./UI";
 import { AIConfig } from "../services/storage";
 import { OpenAIClient } from "../services/openaiClient";
 import { useSettings } from "../hooks/useSettings";
 import { getStoredPassphrase } from "../services/crypto";
 
-const URL_PRESETS: IComboBoxOption[] = [
-  { key: "https://api.openai.com/v1", text: "OpenAI" },
-  { key: "http://localhost:11434/v1", text: "Ollama (local)" },
-  { key: "https://openrouter.ai/api/v1", text: "OpenRouter" },
-  { key: "https://api.deepseek.com/v1", text: "DeepSeek" },
-  { key: "https://api.mistral.ai/v1", text: "Mistral AI" },
-  { key: "https://generativelanguage.googleapis.com/v1beta/openai", text: "Google Gemini (compat. OpenAI)" },
+const URL_PRESETS = [
+  { value: "https://api.openai.com/v1", label: "OpenAI (https://api.openai.com/v1)" },
+  { value: "http://localhost:11434/v1", label: "Ollama local (http://localhost:11434/v1)" },
+  { value: "https://openrouter.ai/api/v1", label: "OpenRouter (https://openrouter.ai/api/v1)" },
+  { value: "https://api.deepseek.com/v1", label: "DeepSeek (https://api.deepseek.com/v1)" },
+  { value: "https://api.mistral.ai/v1", label: "Mistral AI (https://api.mistral.ai/v1)" },
+  { value: "https://generativelanguage.googleapis.com/v1beta/openai", label: "Google Gemini (compat. OpenAI)" },
 ];
 
-const MODEL_SUGGESTIONS: IComboBoxOption[] = [
-  { key: "gpt-5", text: "gpt-5" },
-  { key: "gpt-5-mini", text: "gpt-5-mini" },
-  { key: "gpt-4.1", text: "gpt-4.1" },
-  { key: "gpt-4.1-mini", text: "gpt-4.1-mini" },
-  { key: "o4-mini", text: "o4-mini" },
-  { key: "o3", text: "o3" },
-  { key: "llama-3.3-70b", text: "llama-3.3-70b" },
-  { key: "llama-3.1-8b", text: "llama-3.1-8b" },
-  { key: "qwen3", text: "qwen3" },
-  { key: "qwen2.5-72b", text: "qwen2.5-72b" },
-  { key: "deepseek-r1", text: "deepseek-r1" },
-  { key: "deepseek-chat", text: "deepseek-chat" },
-  { key: "mistral-large", text: "mistral-large" },
-  { key: "@cf/meta/llama-3.3-70b-instruct-fp8-fast", text: "@cf/meta/llama-3.3-70b-instruct-fp8-fast" },
+const MODEL_PRESETS = [
+  "gpt-5",
+  "gpt-5-mini",
+  "gpt-4.1",
+  "gpt-4.1-mini",
+  "o4-mini",
+  "o3",
+  "llama-3.3-70b",
+  "llama-3.1-8b",
+  "qwen3",
+  "qwen2.5-72b",
+  "deepseek-r1",
+  "deepseek-chat",
+  "mistral-large",
+  "@cf/meta/llama-3.3-70b-instruct-fp8-fast",
 ];
 
 export const AIConfigPanel: React.FC = () => {
@@ -46,6 +36,7 @@ export const AIConfigPanel: React.FC = () => {
   const [baseUrl, setBaseUrl] = useState<string>(aiConfig?.baseUrl || "https://api.openai.com/v1");
   const [apiKey, setApiKey] = useState<string>(aiConfig?.apiKey || "");
   const [model, setModel] = useState<string>(aiConfig?.model || "gpt-5-mini");
+  const [modelInput, setModelInput] = useState<string>("");
   const [saving, setSaving] = useState(false);
   const [testing, setTesting] = useState(false);
   const [status, setStatus] = useState<{ type: "success" | "error"; text: string } | null>(null);
@@ -55,8 +46,13 @@ export const AIConfigPanel: React.FC = () => {
       setBaseUrl(aiConfig.baseUrl);
       setApiKey(aiConfig.apiKey);
       setModel(aiConfig.model);
+      if (!MODEL_PRESETS.includes(aiConfig.model)) {
+        setModelInput(aiConfig.model);
+      }
     }
   }, [aiConfig]);
+
+  const finalModel = modelInput.trim() || model;
 
   const handleSave = async () => {
     if (!getStoredPassphrase()) {
@@ -67,7 +63,7 @@ export const AIConfigPanel: React.FC = () => {
       setStatus({ type: "error", text: "L'URL de l'API est requise." });
       return;
     }
-    if (!model.trim()) {
+    if (!finalModel.trim()) {
       setStatus({ type: "error", text: "Le nom du modèle est requis." });
       return;
     }
@@ -78,7 +74,7 @@ export const AIConfigPanel: React.FC = () => {
         provider: "custom",
         baseUrl: baseUrl.trim().replace(/\/+$/, ""),
         apiKey: apiKey.trim(),
-        model: model.trim(),
+        model: finalModel.trim(),
       };
       await saveAIConfig(cfg);
       setStatus({ type: "success", text: "Configuration enregistrée." });
@@ -90,7 +86,7 @@ export const AIConfigPanel: React.FC = () => {
   };
 
   const handleTest = async () => {
-    if (!baseUrl.trim() || !model.trim()) {
+    if (!baseUrl.trim() || !finalModel.trim()) {
       setStatus({ type: "error", text: "URL et modèle requis pour tester." });
       return;
     }
@@ -101,20 +97,14 @@ export const AIConfigPanel: React.FC = () => {
         provider: "custom",
         baseUrl: baseUrl.trim().replace(/\/+$/, ""),
         apiKey: apiKey.trim(),
-        model: model.trim(),
+        model: finalModel.trim(),
       };
       const client = new OpenAIClient(cfg);
-      const endpoint = (client as any).getEndpoint
-        ? (client as any).getEndpoint()
-        : `${cfg.baseUrl}/chat/completions`;
       const reply = await client.complete(
         "Tu réponds en français de manière très concise.",
         "Dis simplement 'Connexion réussie' en une phrase."
       );
-      setStatus({
-        type: "success",
-        text: `Connexion OK (${endpoint}). Réponse: ${reply.slice(0, 80)}`,
-      });
+      setStatus({ type: "success", text: `Connexion OK. ${reply.slice(0, 80)}` });
     } catch (e: any) {
       setStatus({ type: "error", text: e?.message || "Échec du test" });
     } finally {
@@ -124,77 +114,66 @@ export const AIConfigPanel: React.FC = () => {
 
   return (
     <div>
-      <h3 style={{ marginTop: 0 }}>Configuration IA</h3>
-      <p style={{ fontSize: 12, color: "#605e5c" }}>
+      <h3 className="section-title">Configuration IA</h3>
+      <p className="section-description">
         Saisis l'URL complète de ton fournisseur compatible OpenAI, ta clé API et le modèle.
-        Les données sont chiffrées localement.
       </p>
 
-      <ComboBox
+      <TextField
         label="URL de l'API"
-        allowFreeform
-        autoComplete="on"
-        text={baseUrl}
-        onChange={(_: any, option?: IComboBoxOption, index?: number, value?: string) => {
-          if (value !== undefined) {
-            setBaseUrl(value);
-          } else if (option) {
-            setBaseUrl(String(option.key));
-          }
-        }}
-        options={URL_PRESETS}
+        value={baseUrl}
+        onChange={setBaseUrl}
         placeholder="https://api.openai.com/v1"
-        styles={{ root: { marginBottom: 12 } }}
+      />
+
+      <div className="form-helper" style={{ marginTop: -8, marginBottom: 12 }}>
+        OU choisis un preset :
+      </div>
+      <Dropdown
+        value=""
+        onChange={(v) => v && setBaseUrl(v)}
+        options={[{ value: "", label: "— Selectionner un preset —" }, ...URL_PRESETS]}
       />
 
       <TextField
         label="Clé API"
         type="password"
         value={apiKey}
-        onChange={(_, v) => setApiKey(v || "")}
+        onChange={setApiKey}
         placeholder="sk-..."
         canRevealPassword
-        styles={{ root: { marginBottom: 12 } }}
       />
 
-      <ComboBox
-        label="Modèle"
-        allowFreeform
-        autoComplete="on"
-        text={model}
-        onChange={(_: any, option?: IComboBoxOption, index?: number, value?: string) => {
-          if (value !== undefined) {
-            setModel(value);
-          } else if (option) {
-            setModel(String(option.key));
-          }
+      <TextField
+        label="Modèle (saisie libre)"
+        value={modelInput || model}
+        onChange={(v) => {
+          setModelInput(v);
+          if (MODEL_PRESETS.includes(v)) setModel(v);
         }}
-        options={MODEL_SUGGESTIONS}
-        placeholder="Saisis ou choisis un modèle (ex: gpt-5-mini)"
-        styles={{ root: { marginBottom: 12 } }}
+        placeholder="gpt-5-mini, llama-3.3-70b, ..."
       />
+
+      <div className="form-helper" style={{ marginTop: -8, marginBottom: 12 }}>
+        OU choisis : {MODEL_PRESETS.join(", ")}
+      </div>
 
       {status && (
-        <MessageBar
-          messageBarType={status.type === "success" ? MessageBarType.success : MessageBarType.error}
-          styles={{ root: { marginBottom: 12 } }}
-        >
-          {status.text}
-        </MessageBar>
+        <MessageBar type={status.type}>{status.text}</MessageBar>
       )}
 
-      <div style={{ display: "flex", gap: 8 }}>
+      <div className="btn-group">
         <PrimaryButton
           text="Enregistrer"
           onClick={handleSave}
-          disabled={saving || !baseUrl.trim() || !apiKey.trim() || !model.trim()}
+          disabled={saving || !baseUrl.trim() || !apiKey.trim() || !finalModel.trim()}
         />
         <DefaultButton
           text={testing ? "Test en cours..." : "Tester la connexion"}
           onClick={handleTest}
-          disabled={testing || !baseUrl.trim() || !apiKey.trim() || !model.trim()}
+          disabled={testing || !baseUrl.trim() || !apiKey.trim() || !finalModel.trim()}
         />
-        {testing && <Spinner size={SpinnerSize.small} />}
+        {testing && <Spinner />}
       </div>
     </div>
   );

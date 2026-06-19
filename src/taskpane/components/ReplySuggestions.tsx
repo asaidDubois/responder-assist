@@ -1,13 +1,5 @@
 import React, { useState } from "react";
-import {
-  PrimaryButton,
-  DefaultButton,
-  Spinner,
-  SpinnerSize,
-  MessageBar,
-  MessageBarType,
-  Text,
-} from "@fluentui/react";
+import { PrimaryButton, Spinner, MessageBar } from "./UI";
 import { useEmail } from "../hooks/useEmail";
 import { useSettings } from "../hooks/useSettings";
 import {
@@ -48,11 +40,7 @@ export const ReplySuggestionsView: React.FC = () => {
 
       const result = await generateReplies(
         client,
-        {
-          subject: email.subject,
-          body: email.body,
-          from: email.from,
-        },
+        { subject: email.subject, body: email.body, from: email.from },
         userSettings,
         styleProfile
       );
@@ -61,11 +49,7 @@ export const ReplySuggestionsView: React.FC = () => {
       if (userSettings.replyInOriginalLanguage && lang !== "fr") {
         const t = await generateAndTranslate(
           client,
-          {
-            subject: email.subject,
-            body: email.body,
-            from: email.from,
-          },
+          { subject: email.subject, body: email.body, from: email.from },
           userSettings,
           styleProfile,
           lang
@@ -83,8 +67,7 @@ export const ReplySuggestionsView: React.FC = () => {
     if (!replies) return;
     setActive(kind);
     try {
-      const useTranslated =
-        showTranslated && translatedReplies && userSettings.replyInOriginalLanguage;
+      const useTranslated = showTranslated && translatedReplies && userSettings.replyInOriginalLanguage;
       const text = useTranslated ? translatedReplies![kind] : replies[kind];
       await insertIntoCompose(text);
     } catch (e: any) {
@@ -95,33 +78,28 @@ export const ReplySuggestionsView: React.FC = () => {
   };
 
   if (!isConfigured) {
-    return (
-      <MessageBar messageBarType={MessageBarType.warning}>
-        Configurez d'abord votre fournisseur IA.
-      </MessageBar>
-    );
+    return <MessageBar type="warning">Configure d'abord ton fournisseur IA.</MessageBar>;
   }
 
   return (
     <div>
-      <h3 style={{ marginTop: 0 }}>Générer des réponses</h3>
+      <h3 className="section-title">Générer des réponses</h3>
       <PrimaryButton
         text={loading ? "Génération en cours..." : "Générer les réponses"}
         onClick={handleGenerate}
         disabled={loading || !email}
-        iconProps={loading ? undefined : undefined}
       />
+
       {loading && (
-        <div className="spinner-container">
-          <Spinner size={SpinnerSize.small} />
-          <Text>Le modèle analyse le fil et rédige...</Text>
+        <div className="spinner-row">
+          <Spinner /> Le modèle analyse le fil et rédige...
         </div>
       )}
 
-      {err && <div className="error-message">{err}</div>}
+      {err && <div className="message message-error">{err}</div>}
 
       {replies && originalLang && (
-        <div className="success-message" style={{ marginTop: 8 }}>
+        <div className="message message-success" style={{ marginTop: 8 }}>
           Langue détectée : {originalLang}.
           {userSettings.replyInOriginalLanguage && originalLang !== "fr" && (
             <> Version traduite disponible.</>
@@ -131,8 +109,8 @@ export const ReplySuggestionsView: React.FC = () => {
 
       {translatedReplies && userSettings.replyInOriginalLanguage && originalLang !== "fr" && (
         <div style={{ marginTop: 8 }}>
-          <DefaultButton
-            text={showTranslated ? "Voir version française" : `Voir version ${originalLang}`}
+          <PrimaryButton
+            text={showTranslated ? `Voir version française` : `Voir version ${originalLang}`}
             onClick={() => setShowTranslated((s) => !s)}
           />
         </div>
@@ -148,11 +126,7 @@ export const ReplySuggestionsView: React.FC = () => {
           />
           <ReplyCard
             title="Réponse professionnelle"
-            text={
-              showTranslated && translatedReplies
-                ? translatedReplies.professional
-                : replies.professional
-            }
+            text={showTranslated && translatedReplies ? translatedReplies.professional : replies.professional}
             onUse={() => handleUse("professional")}
             active={active === "professional"}
           />
@@ -174,34 +148,13 @@ const ReplyCard: React.FC<{
   onUse: () => void;
   active: boolean;
 }> = ({ title, text, onUse, active }) => (
-  <div
-    style={{
-      border: "1px solid #edebe9",
-      borderRadius: 4,
-      padding: 12,
-      marginBottom: 8,
-      background: "#fff",
-    }}
-  >
-    <Text variant="medium" style={{ fontWeight: 600 }}>
-      {title}
-    </Text>
-    <div
-      style={{
-        whiteSpace: "pre-wrap",
-        marginTop: 6,
-        fontSize: 13,
-        maxHeight: 180,
-        overflowY: "auto",
-      }}
-    >
-      {text}
-    </div>
+  <div className="card">
+    <h4 className="card-title">{title}</h4>
+    <div className="card-body">{text}</div>
     <PrimaryButton
       text={active ? "Insertion..." : "Utiliser cette réponse"}
       onClick={onUse}
       disabled={active}
-      styles={{ root: { marginTop: 8 } }}
     />
   </div>
 );

@@ -1,14 +1,5 @@
 import React, { useEffect, useState } from "react";
-import {
-  Pivot,
-  PivotItem,
-  MessageBar,
-  MessageBarType,
-  TextField,
-  PrimaryButton,
-  Stack,
-  Text,
-} from "@fluentui/react";
+import { Tabs, TextField, PrimaryButton, MessageBar } from "./components/UI";
 import { AIConfigPanel } from "./components/AIConfigPanel";
 import { SettingsPanel } from "./components/SettingsPanel";
 import { EmailView } from "./components/EmailView";
@@ -28,12 +19,13 @@ import {
 declare const Office: any;
 
 export const App: React.FC = () => {
-  const { loaded, isConfigured } = useSettings();
+  const { isConfigured } = useSettings();
   const [officeReady, setOfficeReady] = useState(false);
   const [passphrase, setPassphraseValue] = useState("");
   const [unlocked, setUnlocked] = useState(false);
   const [authError, setAuthError] = useState<string | null>(null);
   const [firstTime, setFirstTime] = useState(false);
+  const [tab, setTab] = useState("email");
 
   useEffect(() => {
     if (typeof Office === "undefined") {
@@ -82,7 +74,7 @@ export const App: React.FC = () => {
   if (!officeReady) {
     return (
       <div className="app-container">
-        <Text>Chargement d'Office...</Text>
+        <div>Chargement d'Office...</div>
       </div>
     );
   }
@@ -90,115 +82,58 @@ export const App: React.FC = () => {
   if (!unlocked) {
     return (
       <div className="app-container">
-        <Stack tokens={{ childrenGap: 12 }}>
-          <Text variant="large" style={{ fontWeight: 600 }}>
-            Responder Assist
-          </Text>
-          {firstTime ? (
-            <>
-              <Text>
-                Première utilisation : définis une phrase de passe qui servira à chiffrer ta clé API
-                et tes paramètres localement.
-              </Text>
-              <TextField
-                type="password"
-                label="Phrase de passe"
-                value={passphrase}
-                onChange={(_, v) => setPassphraseValue(v || "")}
-                canRevealPassword
-                placeholder="4 caractères minimum"
-              />
-              <PrimaryButton
-                text="Créer et déverrouiller"
-                onClick={handleUnlock}
-                disabled={passphrase.length < 4}
-              />
-            </>
-          ) : (
-            <>
-              <Text>Saisis ta phrase de passe pour déverrouiller Responder Assist.</Text>
-              <TextField
-                type="password"
-                label="Phrase de passe"
-                value={passphrase}
-                onChange={(_, v) => setPassphraseValue(v || "")}
-                canRevealPassword
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") handleUnlock();
-                }}
-              />
-              <PrimaryButton
-                text="Déverrouiller"
-                onClick={handleUnlock}
-                disabled={!passphrase}
-              />
-            </>
-          )}
-          {authError && <MessageBar messageBarType={MessageBarType.error}>{authError}</MessageBar>}
-        </Stack>
+        <h1 className="app-title">Responder Assist</h1>
+        {firstTime ? (
+          <p>
+            Première utilisation : définis une phrase de passe qui servira à chiffrer ta clé API et tes paramètres localement.
+          </p>
+        ) : (
+          <p>Saisis ta phrase de passe pour déverrouiller Responder Assist.</p>
+        )}
+        <TextField
+          label="Phrase de passe"
+          type="password"
+          value={passphrase}
+          onChange={setPassphraseValue}
+          canRevealPassword
+          placeholder="4 caractères minimum"
+          onEnter={handleUnlock}
+        />
+        <PrimaryButton
+          text={firstTime ? "Créer et déverrouiller" : "Déverrouiller"}
+          onClick={handleUnlock}
+          disabled={passphrase.length < 4}
+        />
+        {authError && <MessageBar type="error">{authError}</MessageBar>}
       </div>
     );
   }
 
   return (
     <div className="app-container">
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-        }}
-      >
-        <Text variant="mediumPlus" style={{ fontWeight: 600 }}>
-          Responder Assist
-        </Text>
-        <Text
-          variant="small"
-          style={{ color: "#605e5c", cursor: "pointer" }}
-          onClick={handleLock}
-        >
-          Verrouiller
-        </Text>
+      <div className="app-header">
+        <h1 className="app-title">Responder Assist</h1>
+        <span className="app-link" onClick={handleLock}>Verrouiller</span>
       </div>
 
       {!isConfigured && (
-        <MessageBar messageBarType={MessageBarType.info}>
-          Configure ton fournisseur IA pour commencer.
+        <MessageBar type="info">
+          Configure ton fournisseur IA dans l'onglet "Configuration IA".
         </MessageBar>
       )}
 
-      <Pivot>
-        <PivotItem headerText="Courriel">
-          <div className="tab-content">
-            <EmailView />
-          </div>
-        </PivotItem>
-        <PivotItem headerText="Réponses">
-          <div className="tab-content">
-            <ReplySuggestionsView />
-          </div>
-        </PivotItem>
-        <PivotItem headerText="Correction">
-          <div className="tab-content">
-            <ProofreadPanel />
-          </div>
-        </PivotItem>
-        <PivotItem headerText="Style">
-          <div className="tab-content">
-            <LearnStylePanel />
-          </div>
-        </PivotItem>
-        <PivotItem headerText="Paramètres">
-          <div className="tab-content">
-            <SettingsPanel />
-          </div>
-        </PivotItem>
-        <PivotItem headerText="Configuration IA">
-          <div className="tab-content">
-            <AIConfigPanel />
-          </div>
-        </PivotItem>
-      </Pivot>
+      <Tabs
+        selectedKey={tab}
+        onChange={setTab}
+        items={[
+          { key: "email", header: "Courriel", content: <div className="tab-content"><EmailView /></div> },
+          { key: "replies", header: "Réponses", content: <div className="tab-content"><ReplySuggestionsView /></div> },
+          { key: "proof", header: "Correction", content: <div className="tab-content"><ProofreadPanel /></div> },
+          { key: "style", header: "Style", content: <div className="tab-content"><LearnStylePanel /></div> },
+          { key: "settings", header: "Paramètres", content: <div className="tab-content"><SettingsPanel /></div> },
+          { key: "config", header: "Config IA", content: <div className="tab-content"><AIConfigPanel /></div> },
+        ]}
+      />
     </div>
   );
 };

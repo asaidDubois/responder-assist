@@ -1,14 +1,5 @@
 import React, { useState } from "react";
-import {
-  PrimaryButton,
-  DefaultButton,
-  Spinner,
-  SpinnerSize,
-  MessageBar,
-  MessageBarType,
-  Text,
-  IconButton,
-} from "@fluentui/react";
+import { PrimaryButton, DefaultButton, Spinner, MessageBar } from "./UI";
 import { useEmail } from "../hooks/useEmail";
 import { useSettings } from "../hooks/useSettings";
 import { proofread, Correction, ProofreadResult } from "../services/profreader";
@@ -81,49 +72,37 @@ export const ProofreadPanel: React.FC = () => {
   };
 
   if (!isConfigured) {
-    return (
-      <MessageBar messageBarType={MessageBarType.warning}>
-        Configurez d'abord votre fournisseur IA.
-      </MessageBar>
-    );
+    return <MessageBar type="warning">Configure d'abord ton fournisseur IA.</MessageBar>;
   }
 
   return (
     <div>
-      <h3 style={{ marginTop: 0 }}>Vérification avant envoi</h3>
-      <Text variant="small" style={{ color: "#605e5c" }}>
-        Corrige l'orthographe, la grammaire, la ponctuation, les fautes de frappe et les phrases
-        maladroites.
-      </Text>
-      <div style={{ marginTop: 8 }}>
-        <PrimaryButton
-          text={loading ? "Correction en cours..." : "Corriger avant envoi"}
-          onClick={handleCorrect}
-          disabled={loading || !email || email.itemType !== "compose"}
-        />
-      </div>
+      <h3 className="section-title">Vérification avant envoi</h3>
+      <p className="section-description">
+        Corrige l'orthographe, la grammaire, la ponctuation, les fautes de frappe et les phrases maladroites.
+      </p>
+      <PrimaryButton
+        text={loading ? "Correction en cours..." : "Corriger avant envoi"}
+        onClick={handleCorrect}
+        disabled={loading || !email || email.itemType !== "compose"}
+      />
 
       {loading && (
-        <div className="spinner-container">
-          <Spinner size={SpinnerSize.small} />
-          <Text>Analyse du texte...</Text>
-        </div>
+        <div className="spinner-row"><Spinner /> Analyse du texte...</div>
       )}
 
-      {err && <div className="error-message">{err}</div>}
+      {err && <div className="message message-error">{err}</div>}
 
       {result && (
         <div style={{ marginTop: 12 }}>
           {result.corrections.length === 0 ? (
-            <div className="success-message">Aucune correction nécessaire.</div>
+            <div className="message message-success">Aucune correction nécessaire.</div>
           ) : (
             <>
-              <div className="success-message">
-                {result.corrections.length} correction
-                {result.corrections.length > 1 ? "s" : ""} proposée
-                {result.corrections.length > 1 ? "s" : ""}.
+              <div className="message message-success">
+                {result.corrections.length} correction{result.corrections.length > 1 ? "s" : ""} proposée{result.corrections.length > 1 ? "s" : ""}.
               </div>
-              <div style={{ display: "flex", gap: 8, margin: "8px 0" }}>
+              <div className="btn-group" style={{ margin: "8px 0" }}>
                 <PrimaryButton text="Accepter tout" onClick={acceptAll} />
                 <DefaultButton text="Appliquer le texte corrigé" onClick={applyCorrected} />
               </div>
@@ -134,79 +113,50 @@ export const ProofreadPanel: React.FC = () => {
                 return (
                   <div
                     key={i}
+                    className="correction"
                     style={{
-                      border: `1px solid ${TYPE_COLORS[c.type]}`,
-                      borderRadius: 4,
-                      padding: 8,
-                      marginBottom: 8,
-                      background: isAccepted ? "#dff6dd" : isRejected ? "#fde7e9" : "#fff",
+                      borderColor: TYPE_COLORS[c.type],
+                      background: isAccepted ? "#dff6dd" : isRejected ? "#fde7e9" : "#ffffff",
                       opacity: isRejected ? 0.5 : 1,
                     }}
                   >
                     <div style={{ display: "flex", justifyContent: "space-between" }}>
-                      <Text
-                        variant="small"
-                        style={{ color: TYPE_COLORS[c.type], fontWeight: 600 }}
-                      >
+                      <span className="correction-type" style={{ color: TYPE_COLORS[c.type] }}>
                         {TYPE_LABELS[c.type] || c.type}
-                      </Text>
-                      <div>
-                        <IconButton
-                          iconProps={{ iconName: "CheckMark" }}
+                      </span>
+                      <div className="correction-actions">
+                        <button
+                          className="icon-btn"
                           title="Accepter"
-                          onClick={() =>
-                            setAccepted((prev) => new Set(prev).add(i))
-                          }
+                          onClick={() => setAccepted((prev) => new Set(prev).add(i))}
                           disabled={isAccepted}
-                        />
-                        <IconButton
-                          iconProps={{ iconName: "Cancel" }}
+                        >
+                          ✓
+                        </button>
+                        <button
+                          className="icon-btn"
                           title="Rejeter"
-                          onClick={() =>
-                            setRejected((prev) => new Set(prev).add(i))
-                          }
+                          onClick={() => setRejected((prev) => new Set(prev).add(i))}
                           disabled={isRejected}
-                        />
+                        >
+                          ✗
+                        </button>
                       </div>
                     </div>
-                    <div style={{ marginTop: 4, fontSize: 13 }}>
-                      <span style={{ textDecoration: "line-through", color: "#a4262c" }}>
-                        {c.original}
-                      </span>{" "}
-                      →{" "}
-                      <span style={{ color: "#107c10", fontWeight: 500 }}>
-                        {c.suggestion}
-                      </span>
+                    <div className="correction-text">
+                      <span className="correction-original">{c.original}</span> →{" "}
+                      <span className="correction-suggestion">{c.suggestion}</span>
                     </div>
                     {c.explanation && (
-                      <Text
-                        variant="small"
-                        style={{ color: "#605e5c", display: "block", marginTop: 4 }}
-                      >
-                        {c.explanation}
-                      </Text>
+                      <div className="correction-explanation">{c.explanation}</div>
                     )}
                   </div>
                 );
               })}
 
               <details style={{ marginTop: 12 }}>
-                <summary style={{ cursor: "pointer" }}>
-                  <Text variant="small">Voir le texte corrigé complet</Text>
-                </summary>
-                <div
-                  style={{
-                    whiteSpace: "pre-wrap",
-                    padding: 8,
-                    background: "#faf9f8",
-                    border: "1px solid #edebe9",
-                    borderRadius: 4,
-                    marginTop: 6,
-                    fontSize: 13,
-                  }}
-                >
-                  {result.correctedText}
-                </div>
+                <summary style={{ cursor: "pointer" }}>Voir le texte corrigé complet</summary>
+                <div className="email-body" style={{ marginTop: 6 }}>{result.correctedText}</div>
               </details>
             </>
           )}

@@ -1,13 +1,5 @@
 import React, { useState } from "react";
-import {
-  PrimaryButton,
-  Spinner,
-  SpinnerSize,
-  MessageBar,
-  MessageBarType,
-  Text,
-  Label,
-} from "@fluentui/react";
+import { PrimaryButton, Spinner, MessageBar } from "./UI";
 import { useEmail } from "../hooks/useEmail";
 import { useSettings } from "../hooks/useSettings";
 import { analyzeStyle, EmailSample } from "../services/styleLearner";
@@ -49,61 +41,43 @@ export const LearnStylePanel: React.FC = () => {
   const profile = updated || styleProfile;
 
   if (!isConfigured) {
-    return (
-      <MessageBar messageBarType={MessageBarType.warning}>
-        Configurez d'abord votre fournisseur IA.
-      </MessageBar>
-    );
+    return <MessageBar type="warning">Configure d'abord ton fournisseur IA.</MessageBar>;
   }
 
   return (
     <div>
-      <h3 style={{ marginTop: 0 }}>Apprendre mon style</h3>
-      <Text variant="small" style={{ color: "#605e5c" }}>
-        Analyse le courriel actuellement ouvert pour enrichir ton profil de style local. Cette
-        fonction s'exécute uniquement à ta demande.
-      </Text>
+      <h3 className="section-title">Apprendre mon style</h3>
+      <p className="section-description">
+        Analyse le courriel actuellement ouvert pour enrichir ton profil de style local. Cette fonction s'exécute uniquement à ta demande.
+      </p>
 
-      <div style={{ marginTop: 12 }}>
-        <PrimaryButton
-          text={loading ? "Analyse en cours..." : "Apprendre mon style"}
-          onClick={handleLearn}
-          disabled={loading || !email}
-        />
-      </div>
+      <PrimaryButton
+        text={loading ? "Analyse en cours..." : "Apprendre mon style"}
+        onClick={handleLearn}
+        disabled={loading || !email}
+      />
 
       {loading && (
-        <div className="spinner-container">
-          <Spinner size={SpinnerSize.small} />
-          <Text>Analyse du style d'écriture...</Text>
-        </div>
+        <div className="spinner-row"><Spinner /> Analyse du style d'écriture...</div>
       )}
 
-      {err && <div className="error-message">{err}</div>}
+      {err && <div className="message message-error">{err}</div>}
 
       {updated && (
-        <div className="success-message" style={{ marginTop: 8 }}>
+        <div className="message message-success" style={{ marginTop: 8 }}>
           Profil de style mis à jour.
         </div>
       )}
 
       {profile && (
         <div style={{ marginTop: 12 }}>
-          <Label>Profil de style actuel</Label>
-          <div
-            style={{
-              padding: 12,
-              background: "#faf9f8",
-              border: "1px solid #edebe9",
-              borderRadius: 4,
-              fontSize: 13,
-            }}
-          >
-            <ProfileRow label="Longueur moyenne" value={profile.averageLength} />
-            <ProfileRow label="Salutation" value={profile.greeting ? "oui" : "non"} />
-            <ProfileRow label="Formule finale" value={profile.closing ? "oui" : "non"} />
-            <ProfileRow label="Ton" value={profile.preferredTone} />
-            <ProfileRow label="Mode" value={profile.defaultMode} />
+          <label className="form-label">Profil de style actuel</label>
+          <div className="profile-box">
+            <div className="profile-row"><strong>Longueur moyenne :</strong> {profile.averageLength || "—"}</div>
+            <div className="profile-row"><strong>Salutation :</strong> {profile.greeting ? "oui" : "non"}</div>
+            <div className="profile-row"><strong>Formule finale :</strong> {profile.closing ? "oui" : "non"}</div>
+            <div className="profile-row"><strong>Ton :</strong> {profile.preferredTone || "—"}</div>
+            <div className="profile-row"><strong>Mode :</strong> {profile.defaultMode || "—"}</div>
             {profile.frequentExpressions && profile.frequentExpressions.length > 0 && (
               <div style={{ marginTop: 6 }}>
                 <strong>Expressions fréquentes :</strong>
@@ -115,22 +89,13 @@ export const LearnStylePanel: React.FC = () => {
               </div>
             )}
             {profile.lastUpdated && (
-              <div style={{ marginTop: 6, color: "#605e5c", fontSize: 11 }}>
+              <div className="profile-timestamp">
                 Dernière mise à jour : {new Date(profile.lastUpdated).toLocaleString("fr-FR")}
               </div>
             )}
           </div>
         </div>
       )}
-    </div>
-  );
-};
-
-const ProfileRow: React.FC<{ label: string; value?: string }> = ({ label, value }) => {
-  if (!value) return null;
-  return (
-    <div>
-      <strong>{label}:</strong> {value}
     </div>
   );
 };
