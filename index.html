@@ -6,9 +6,40 @@
     <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <title>Responder Assist</title>
     <script src="https://appsforoffice.microsoft.com/lib/1.1/hosted/office.js"></script>
+    <style>
+      body { font-family: "Segoe UI", sans-serif; margin: 0; padding: 20px; background: #faf9f8; }
+      h1 { color: #0078d4; font-size: 18px; margin: 0 0 12px; }
+      p { color: #605e5c; font-size: 14px; line-height: 1.4; }
+      .status { background: #dff6dd; color: #107c10; padding: 8px 12px; border-radius: 4px; margin: 12px 0; }
+      .info { background: #e1f5fe; color: #01579b; padding: 8px 12px; border-radius: 4px; margin: 12px 0; font-size: 13px; }
+    </style>
   </head>
-  <body style="margin:0;padding:0">
-    <div id="root"></div>
-    <script type="module" src="/src/taskpane/index.tsx"></script>
+  <body>
+    <h1>Responder Assist</h1>
+    <div id="status" class="info">Initialisation...</div>
+    <p>Cet add-in est en cours de chargement. Si vous voyez ce message, Outlook a reussi a installer l'add-in.</p>
+    <div id="content"></div>
+    <script>
+      (function() {
+        var statusEl = document.getElementById('status');
+        var contentEl = document.getElementById('content');
+        if (typeof Office === 'undefined' || typeof Office.onReady !== 'function') {
+          statusEl.textContent = 'Mode navigateur: office.js non charge';
+          statusEl.className = 'info';
+          return;
+        }
+        Office.onReady(function(info) {
+          statusEl.textContent = 'Pret. Host: ' + info.host + ', Platform: ' + info.platform;
+          statusEl.className = 'status';
+          if (info.host === Office.HostType.Outlook) {
+            var item = Office.context.mailbox.item;
+            if (item) {
+              contentEl.innerHTML = '<p>Sujet: ' + (item.subject || '(vide)') + '</p>' +
+                '<p>De: ' + (item.from ? item.from.emailAddress : '?') + '</p>';
+            }
+          }
+        });
+      })();
+    </script>
   </body>
 </html>
