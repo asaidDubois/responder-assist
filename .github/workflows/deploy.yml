@@ -6,13 +6,13 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
   pages: write
   id-token: write
 
 concurrency:
   group: pages
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 jobs:
   build:
@@ -39,39 +39,29 @@ jobs:
           DEPLOY: github
         run: npm run build
 
-      - name: Copy 404.html for SPA routing
-        run: cp dist/index.html dist/404.html
-
-      - name: Flatten commands.html
+      - name: Prepare dist
         run: |
+          # Copie 404.html pour SPA routing
+          cp dist/index.html dist/404.html
+          # Aplatit commands.html
           if [ -f dist/src/commands/commands.html ]; then
             cp dist/src/commands/commands.html dist/commands.html
             rm -rf dist/src
           fi
-          ls -la dist/
-
-      - name: Verify required files
-        run: |
+          # Verifications
           test -f dist/index.html || (echo "Missing index.html" && exit 1)
           test -f dist/commands.html || (echo "Missing commands.html" && exit 1)
           test -f dist/assets/icon-64.png || (echo "Missing icon-64.png" && exit 1)
-          echo "All required files present"
+          echo "Build artifacts ready"
+          ls -la dist/
 
-      - name: Setup Pages
-        uses: actions/configure-pages@v4
-
-      - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
+      - name: Deploy to gh-pages branch
+        uses: peaceiris/actions-gh-pages@v4
         with:
-          path: "./dist"
-
-  deploy:
-    needs: build
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    runs-on: ubuntu-latest
-    steps:
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./dist
+          publish_branch: gh-pages
+          force_orphan: true
+          user_name: "github-actions[bot]"
+          user_email: "github-actions[bot]@users.noreply.github.com"
+          commit_message: "Deploy from ${{ github.sha }}"

@@ -44,7 +44,7 @@ foreach ($f in $required) {
 }
 Write-Host "Tous les fichiers requis sont présents" -ForegroundColor Green
 
-# 4. Créer 404.html
+# 4. Créer 404.html pour SPA routing
 Copy-Item "dist\index.html" "dist\404.html" -Force
 
 # 5. Générer le manifeste si GitHubUser fourni
@@ -57,6 +57,11 @@ Write-Host ""
 Write-Host "=== Terminé ===" -ForegroundColor Green
 Write-Host "Dossier prêt pour GitHub Pages : $root\dist"
 Write-Host ""
-Write-Host "Prochaines étapes :" -ForegroundColor Yellow
-Write-Host "  1. Commit et push sur GitHub"
-Write-Host "  2. Active Pages sur la branche 'gh-pages' ou via GitHub Actions"
+Write-Host "Deploiement : le workflow GitHub Actions pousse automatiquement" -ForegroundColor Yellow
+Write-Host "  sur la branche 'gh-pages' a chaque push sur main." -ForegroundColor Yellow
+Write-Host ""
+Write-Host "Si tu n'as pas active GitHub Pages :" -ForegroundColor Yellow
+Write-Host "  1. Va sur https://github.com/$GitHubUser/$RepoName/settings/pages"
+Write-Host "  2. Source : 'Deploy from a branch'"
+Write-Host "  3. Branche : gh-pages / (root)"
+Write-Host "  4. Save"
