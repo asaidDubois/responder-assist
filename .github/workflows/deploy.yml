@@ -50,6 +50,13 @@ jobs:
           fi
           ls -la dist/
 
+      - name: Verify required files
+        run: |
+          test -f dist/index.html || (echo "Missing index.html" && exit 1)
+          test -f dist/commands.html || (echo "Missing commands.html" && exit 1)
+          test -f dist/assets/icon-64.png || (echo "Missing icon-64.png" && exit 1)
+          echo "All required files present"
+
       - name: Setup Pages
         uses: actions/configure-pages@v4
 

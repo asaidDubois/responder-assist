@@ -34,6 +34,16 @@ if (Test-Path "dist\src\commands\commands.html") {
     Remove-Item "dist\src" -Recurse -Force
 }
 
+# 3b. Vérifications
+$required = @("dist\index.html", "dist\commands.html", "dist\assets\icon-64.png")
+foreach ($f in $required) {
+    if (-not (Test-Path $f)) {
+        Write-Host "[ERREUR] Fichier manquant : $f" -ForegroundColor Red
+        exit 1
+    }
+}
+Write-Host "Tous les fichiers requis sont présents" -ForegroundColor Green
+
 # 4. Créer 404.html
 Copy-Item "dist\index.html" "dist\404.html" -Force
 
