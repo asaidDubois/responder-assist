@@ -38,7 +38,7 @@ jobs:
           NODE_ENV: production
           DEPLOY: github
           GITHUB_REPOSITORY: ${{ github.repository }}
-        run: npm run build
+        run: npm run build 2>&1 | tee build.log; echo "EXIT_CODE=${PIPESTATUS[0]}"; cat build.log
 
       - name: Prepare dist
         run: |
