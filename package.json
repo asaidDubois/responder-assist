@@ -13,7 +13,9 @@
     "icons": "node generate-icons.cjs",
     "typecheck": "tsc --noEmit",
     "tunnel": "powershell -ExecutionPolicy Bypass -File tunnel/start-tunnel.ps1",
-    "tunnel:stop": "powershell -ExecutionPolicy Bypass -File tunnel/stop-tunnel.ps1"
+    "tunnel:stop": "powershell -ExecutionPolicy Bypass -File tunnel/stop-tunnel.ps1",
+    "test:local": "powershell -ExecutionPolicy Bypass -File scripts/test-local.ps1",
+    "test:local:stop": "powershell -ExecutionPolicy Bypass -File scripts/test-local.ps1 -Stop"
   },
   "dependencies": {
     "@microsoft/office-js": "^1.1.0",
